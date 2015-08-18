@@ -52,6 +52,14 @@ and open the template in the editor.
                             </ul>
                         </nav>
                     </li>
+                    <li><a href="#">Tools <span class="toggle">Expand</span><span class="caret"></span></a>
+                        <nav>
+                            <ul>
+                                <li><a href="importCSV.php">Import CSV</a></li>
+                                <li><a href="importQFX.php">Import QFX</a></li>
+                            </ul>
+                        </nav>
+                    </li>
                 </ul>
             </nav>
         </header>
