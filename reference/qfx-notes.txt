@@ -1,0 +1,82 @@
+<FITID> - Unique ID in each transaction.  used to find duplicate transactions.  Must be in database
+<BANKID>123412341 - Routing number in banking
+<ACCTID>123456789=CK=1 - Account number
+<ACCTTYPE>CHECKING - (checkin, savings, money markey, credit line )
+				
+In OFX, Account Information is stored within a series of OFX tags. The different types of downloads  (banking, credit card, investment) store slightly different information:
+Banking	:	Account Number, Account Type (checking, savings, money market, credit line), Routing Number
+Credit Card	:	Account Number
+Investment	:	Account Number, Broker ID
+
+Branding Identifier (BID)
+A Branding Identifier (generally referred to as BID) is a unique, 2-5 digit numeric value that is assigned to each presence in our software. In WebConnect Implementations, the downloaded file contains this number in the INTU.BID tag, allowing the Intuit software to identify what Financial Institution is being used.
+
+Tag						Description					Exact Attribute
+
+<SIGNONMSGSRSV1>		Authentication service		Not used
+<BANKMSGSRSV1>			Bank service
+ <STMTTRNRS>
+    <TRNUID>			Unique transaction ID		Not used
+    <STATUS>			Status of transaction		Check status code is 0 – OK
+      <CODE>0									If status is error, reject the file
+      <SEVERITY>INFO
+    </STATUS>
+    <STMTRS>			Statement-response
+      <CURDEF>			Default currency			 Default currency; GLTransactions.Currency
+      <BANKACCTFROM>
+        <BANKID>		Account-from				BankID is Sort code
+        <ACCTID>									AcctID is Account code
+        <ACCTTYPE>									checking, savings, money markey, credit line
+      </BANKACCTFROM> 								BankID + AcctID is Own bank account; GLTransactions.BankAccount
+      <BANKTRANLIST>	Statement-transaction-data
+        <DTSTART>		Start date for transaction data, date
+        <DTEND>			Value that client should send in next <DTSTART> request to ensure that it does not miss any transactions, date
+        <STMTTRN>		Opening tag for each statement transaction (0 or more)
+          <TRNTYPE>		Transaction type.
+          <DTPOSTED>	Date transaction was posted to account, datetimennGLTransactions.EntryDate, Format is YYYYMMDD
+          <TRNAMT>		Amount of transaction, amount, Negative is Cash out, Positive is Cash in, GLTransactions.AmountDC
+          <FITID>		Transaction ID issued by financial institution.Used to detect duplicate downloads, FITID Possible to store this identification to avoid duplicates
+          <CHECKNUM>	Check (or other reference) number	{To be used in cheques user story}
+          <PAYEEID>		Payee identifier if available	Customer / Supplier ID assigned by server, maybe used
+          <NAME>		Name of payee or description of transaction Note: Provide NAME or PAYEE
+          -or-
+          <PAYEE>		Payee aggregate
+            <NAME>
+            <ADDR1>
+            <CITY>
+            <STATE>
+            <POSTALCODE>
+            <PHONE>
+          </PAYEE>
+          <EXTDNAME>	Extended name of payee or description of transaction
+          <BANKACCTTO>	If this was a transfer to an account and the account information is available
+            <BANKID>	BankID is Sort code
+            <ACCTID>	AcctID is Account code BankID + AcctID is Own bank account; GLTransactions.AccountBankAccount
+            <ACCTTYPE>
+          </BANKACCTTO>
+          -or-         
+          <CCACCTTO>	{CCAcctTo to be used in credit card user story}
+          </CCACCTTO>
+          <MEMO>    	extra information (not in <NAME>), MEMO
+          <IMAGEDATA>	Image data aggregate, up to 2 allowed. {To be used in cheques user story}
+          </IMAGEDATA>
+          <CURRENCY>	Currency, if different from CURDEF If available, this tag is used in place of default currency as transaction currency; GLTransactions.Currency
+          </CURRENCY>         
+          -or-       
+          <ORIGCURRENCY>
+         </ORIGCURRENCY>
+        </STMTTRN>		End tag for each statement transaction
+      </BANKTRANLIST>
+      <LEDGERBAL>		Ledger balance			BalAmt is closing balance; GLTransactions.ClosingBalanceFC
+        <BALAMT>		Ledger balance amount	NOTE: Opening balance is calculated:
+        <DTASOF>		Balance date			Closing balance + Total positive transaction + Total negative transaction
+      </LEDGERBAL>
+     <AVAILBAL>			Available balance
+     <BALLIST>			Other balance
+     <MKTGINFO>			Marketing info
+   </STMTRS>
+ </STMTTRNRS>
+</BANKMSGSRSV1>
+
+
+<CREDITCARDMSGSRSV1>	Credit card service		{To be done with credit card user story}
