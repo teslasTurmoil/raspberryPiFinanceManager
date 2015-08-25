@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
--- Host:                         192.168.0.60
--- Server version:               5.5.44-0+deb7u1 - (Debian)
--- Server OS:                    debian-linux-gnu
+-- Host:                         192.168.56.101
+-- Server version:               5.5.41-MariaDB - MariaDB Server
+-- Server OS:                    Linux
 -- HeidiSQL Version:             9.1.0.4867
 -- --------------------------------------------------------
 
@@ -28,6 +28,18 @@ CREATE TABLE IF NOT EXISTS `accounts` (
 -- Data exporting was unselected.
 
 
+-- Dumping structure for table finances.budgetTimeframe
+CREATE TABLE IF NOT EXISTS `budgetTimeframe` (
+  `tfID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `StartDate` date NOT NULL,
+  `EndDate` date NOT NULL,
+  `Description` varchar(50) NOT NULL,
+  PRIMARY KEY (`tfID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to set when the budgets will be tracked. Allows for easily seeing the history. ';
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table finances.budget_items
 CREATE TABLE IF NOT EXISTS `budget_items` (
   `budget_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -35,19 +47,21 @@ CREATE TABLE IF NOT EXISTS `budget_items` (
   `amount` decimal(9,2) NOT NULL,
   `account` varchar(100) NOT NULL,
   PRIMARY KEY (`budget_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='These are items that will have individual purchases taken from them. The total is for the month. ';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='These are items that will have individual purchases taken from them. The total is for the month.  Examples include Groceries, Electric, Misc. ';
 
 -- Data exporting was unselected.
 
 
 -- Dumping structure for table finances.funds
 CREATE TABLE IF NOT EXISTS `funds` (
-  `fund_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `fund_ID` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `type` varchar(100) NOT NULL,
   `balance` decimal(10,2) NOT NULL,
-  `assocAccountID` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`fund_ID`)
+  `assocAccountID` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`fund_ID`),
+  KEY `FK_funds_accounts` (`assocAccountID`),
+  CONSTRAINT `FK_funds_accounts` FOREIGN KEY (`assocAccountID`) REFERENCES `accounts` (`account_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='this table is used to track different funds that are used to save for taxes, holiday spending, etc. ';
 
 -- Data exporting was unselected.
@@ -61,21 +75,11 @@ CREATE TABLE IF NOT EXISTS `income` (
   `amount` decimal(9,2) NOT NULL,
   `incomeDate` date NOT NULL,
   `account` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`income_ID`)
+  `recID` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`income_ID`),
+  KEY `FK_income_receipts` (`recID`),
+  CONSTRAINT `FK_income_receipts` FOREIGN KEY (`recID`) REFERENCES `receipts` (`recID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='This is used to track various types of income(deposits).';
-
--- Data exporting was unselected.
-
-
--- Dumping structure for table finances.monthlyBills
-CREATE TABLE IF NOT EXISTS `monthlyBills` (
-  `bill_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `amount` decimal(9,2) NOT NULL,
-  `billDate` date NOT NULL,
-  `account` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`bill_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Data exporting was unselected.
 
@@ -83,14 +87,29 @@ CREATE TABLE IF NOT EXISTS `monthlyBills` (
 -- Dumping structure for table finances.purchases
 CREATE TABLE IF NOT EXISTS `purchases` (
   `purchaseID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `location` varchar(100) NOT NULL,
-  `personName` varchar(100) NOT NULL,
   `amount` decimal(9,2) NOT NULL,
-  `purchaseDate` date NOT NULL,
   `account` varchar(100) NOT NULL,
   `budget` varchar(100) NOT NULL,
-  PRIMARY KEY (`purchaseID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `recID` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`purchaseID`),
+  KEY `FK_purchases_receipts` (`recID`),
+  CONSTRAINT `FK_purchases_receipts` FOREIGN KEY (`recID`) REFERENCES `receipts` (`recID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='This is to configure the receipts to allow splitting them into multiple budgets. Example, walmart receipt has groceries and misc purchases. Can also just be tying a receipt to a budget. ';
+
+-- Data exporting was unselected.
+
+
+-- Dumping structure for table finances.receipts
+CREATE TABLE IF NOT EXISTS `receipts` (
+  `recID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `location` varchar(50) NOT NULL,
+  `memo` varchar(100) DEFAULT NULL,
+  `amount` decimal(9,2) unsigned NOT NULL,
+  `date` date NOT NULL,
+  `personName` varchar(50) NOT NULL,
+  `fitID` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`recID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to match line items in a bank statement';
 
 -- Data exporting was unselected.
 
@@ -103,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `repeatingEntries` (
   `entryType` varchar(100) NOT NULL,
   `timeOfMonth` varchar(100) NOT NULL,
   PRIMARY KEY (`entry_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='These are entries that occur monthly. Can be used with a tool to quickly add them to the income, purchases, and monthly bills tables. ';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='These are entries that occur monthly. Can be used with a tool to quickly add them to the income, purchases, and monthly bills. ';
 
 -- Data exporting was unselected.
 
@@ -114,8 +133,9 @@ CREATE TABLE IF NOT EXISTS `transfers` (
   `from` varchar(100) NOT NULL,
   `to` varchar(50) NOT NULL,
   `date` date NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
   PRIMARY KEY (`transfer_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to track transfers';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to track transfers between accounts and/or funds. ';
 
 -- Data exporting was unselected.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
