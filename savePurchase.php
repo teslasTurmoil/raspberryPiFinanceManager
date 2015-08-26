@@ -32,10 +32,6 @@ and open the template in the editor.
                         $table = "INSERT INTO income (name, amount, incomeDate, account, personName) VALUES ('";
                         $data = $data . "', '" . $_POST["personName" . $i] . "');";
                         break;
-                    case "monthlyBill":
-                        $table = "INSERT INTO monthlyBills (name, amount, billDate, account) VALUES ('";
-                        $data = $data . "');";
-                        break;
                 }
                 $sql = $table . $data;
             
