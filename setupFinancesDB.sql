@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `budget_items` (
   `name` varchar(100) NOT NULL,
   `amount` decimal(9,2) NOT NULL,
   `account` varchar(100) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`budget_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='These are items that will have individual purchases taken from them. The total is for the month.  Examples include Groceries, Electric, Misc. ';
 
@@ -70,10 +71,7 @@ CREATE TABLE IF NOT EXISTS `funds` (
 -- Dumping structure for table finances.income
 CREATE TABLE IF NOT EXISTS `income` (
   `income_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `personName` varchar(100) NOT NULL,
   `amount` decimal(9,2) NOT NULL,
-  `incomeDate` date NOT NULL,
   `account` varchar(100) DEFAULT NULL,
   `recID` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`income_ID`),
@@ -107,6 +105,7 @@ CREATE TABLE IF NOT EXISTS `receipts` (
   `amount` decimal(9,2) unsigned NOT NULL,
   `date` date NOT NULL,
   `personName` varchar(50) NOT NULL,
+  `type` tinyint(1) NOT NULL,
   `fitID` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`recID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to match line items in a bank statement';

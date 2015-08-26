@@ -5,9 +5,9 @@
  * and open the template in the editor.
  */
     function dbConnect(){
-        $servername = "192.168.0.60";
-        $username = "web";
-        $password = "thaler1212";
+        $servername = "192.168.56.101";
+        $username = "testuser";
+        $password = "abcd1234";
         $dbname = "finances";
 
         // Create connection

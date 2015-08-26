@@ -16,7 +16,20 @@
                 $index++;
             }
 
-        } 
+        }
+    $sql = "SELECT name FROM funds;";
+    $results = $conn->query($sql);
+
+        if ($results->num_rows > 0) {
+
+            // output data of each row to an array of options
+            $index = 0;
+            while($row = $results->fetch_assoc()) {
+                $funds[$index] = $row['name'];
+                $index++;
+            }
+
+        }
     $sql = "SELECT name FROM accounts;";
     $purchases = $conn->query($sql);
 
@@ -73,12 +86,21 @@
                     });
                                         
                     function addFieldset(i) {
-                        
+                        var funds = [];
                         var accounts = [];
+                        var optFunds = document.createElement("optgroup");
+                        optFunds.setAttribute("label", "Funds");
+                        var optAccounts = document.createElement("optgroup");
+                        optAccounts.setAttribute("label", "Accounts");
                         <?php
                             for ($i=0; $i<count($accounts); $i++){
                                 echo "accounts[{$i}] = document.createElement(\"option\");";
                                 echo "accounts[{$i}].text = \"" . $accounts[$i] . "\";\n\t\t\t\t\t\t";
+                            }
+                            
+                            for ($i=0; $i<count($funds); $i++){
+                                echo "funds[{$i}] = document.createElement(\"option\");";
+                                echo "funds[{$i}].text = \"" . $funds[$i] . "\";\n\t\t\t\t\t\t";
                             }
                         ?>
                                 
@@ -87,6 +109,14 @@
                         legend.innerHTML = "Income "+ i;
                         fieldset.appendChild (legend);
                         fieldset.setAttribute("id", "income" + i);
+                        
+                        for(var index2 = 0; index2< funds.length; index2++){
+                            optFunds.appendChild(funds[index2]);
+                        }
+                        for(var index2 = 0; index2< accounts.length; index2++){
+                            optAccounts.appendChild(accounts[index2]);
+                        }
+                        
                         
                         var input = [];
                         input[0] = document.createElement("input");
@@ -124,9 +154,8 @@
                         input[4].type = "text";
                         input[4].setAttribute("name","account" + i);
                         input[4].setAttribute("required","required");
-                        for(var index2 = 0; index2< accounts.length; index2++){
-                            input[4].add(accounts[index2]);
-                        }
+                        input[4].add(optAccounts);
+                        input[4].add(optFunds);
                         
                         var table = document.createElement("table");
                         table.setAttribute("class", "dataEntry");
