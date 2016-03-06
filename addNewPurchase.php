@@ -5,31 +5,44 @@
 
     $date = getDate();
     $sql = "SELECT name FROM budget_items;";
-    $purchases = $conn->query($sql);
+    $results = $conn->query($sql);
 
-        if ($purchases->num_rows > 0) {
+        if ($results->num_rows > 0) {
 
             // output data of each row to an array of options
             $index = 0;
-            while($row = $purchases->fetch_assoc()) {
+            while($row = $results->fetch_assoc()) {
                 $budgets[$index] = $row['name'];
                 $index++;
             }
 
         } 
     $sql = "SELECT name FROM accounts;";
-    $purchases = $conn->query($sql);
+    $results = $conn->query($sql);
 
-        if ($purchases->num_rows > 0) {
+        if ($results->num_rows > 0) {
 
             // output data of each row to an array of options
             $index = 0;
-            while($row = $purchases->fetch_assoc()) {
+            while($row = $results->fetch_assoc()) {
                 $accounts[$index] = $row['name'];
                 $index++;
             }
 
         } 
+    $sql = "SELECT name FROM funds;";
+    $results = $conn->query($sql);
+
+        if ($results->num_rows > 0) {
+
+            // output data of each row to an array of options
+            $index = 0;
+            while($row = $results->fetch_assoc()) {
+                $funds[$index] = $row['name'];
+                $index++;
+            }
+
+        }
     $conn->close();
 ?>
             <form name="mainForm" action="savePurchase.php" onsubmit="return validateForm()" method="post">
@@ -74,21 +87,35 @@
                     });
                                         
                     function addFieldset(i) {
-                        var budgets = [];
-                        budgets[0] = document.createElement("option");
-                        budgets[0].text = "";
-                        budgets[1] = document.createElement("option");
-                        budgets[1].text = "SPLIT";
-                        var accounts = [];
+                        var option;
+                        var budOG = document.createElement("OPTGROUP");
+                        budOG.label = "Budgets";
+                        var accountOG = document.createElement("OPTGROUP");
+                        accountOG.label = "Accounts";
+                        var fundOG = document.createElement("OPTGROUP");
+                        fundOG.label = "Funds";
+                        //budgets[0] = document.createElement("option");
+                        //budgets[0].text = "";
+                        var splitOpt = document.createElement("option");
+                        splitOpt.text = "SPLIT";
+                        var blankOpt = document.createElement("option");
+                        blankOpt.text = "";
                         <?php
                             for ($i=0; $i<count($budgets); $i++){
-                                echo "budgets[{$i}+2] = document.createElement(\"option\");";
-                                echo "budgets[{$i}+2].text = \"" . $budgets[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "option = document.createElement(\"option\");\n\t\t\t\t\t\t";
+                                echo "option.text = \"" . $budgets[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "budOG.appendChild(option);\n\t\t\t\t\t\t";
                             }
                             
                             for ($i=0; $i<count($accounts); $i++){
-                                echo "accounts[{$i}] = document.createElement(\"option\");";
-                                echo "accounts[{$i}].text = \"" . $accounts[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "option = document.createElement(\"option\");\n\t\t\t\t\t\t";
+                                echo "option.text = \"" . $accounts[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "accountOG.appendChild(option);\n\t\t\t\t\t\t";
+                            }
+                            for ($i=0; $i<count($funds); $i++){
+                                echo "option = document.createElement(\"option\");\n\t\t\t\t\t\t";
+                                echo "option.text = \"" . $funds[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "fundOG.appendChild(option);\n\t\t\t\t\t\t";
                             }
                         ?>
                         
@@ -138,14 +165,20 @@
                         input[4].setAttribute("value", d.toISOString().substring(0, 10));
                         
                         input[5] = document.createElement("select");
-                        input[5].setAttribute("id", "budget" + i);
-                        input[5].setAttribute("name","budget" + i);
+                        input[5].setAttribute("id", "bfa" + i);
+                        input[5].setAttribute("name","bfa" + i);
                         input[5].setAttribute("required","required");
-                        for(var index2 = 0; index2< budgets.length; index2++){
-                            input[5].add(budgets[index2]);
-                        }
+                        //for(var index2 = 0; index2< budgets.length; index2++){
+                        //    input[5].add(budgets[index2]);
+                        //}
+                        input[5].add(blankOpt);
+                        input[5].add(splitOpt);
+                        input[5].add(budOG);
+                        input[5].add(fundOG);
+                        input[5].add(accountOG);
                         input[5].onchange = checkBudgetSplit;
                         
+                        /*
                         input[6] = document.createElement("select");
                         //input[5].type = "text";
                         input[6].setAttribute("name","account" + i);
@@ -153,12 +186,13 @@
                         for(var index2 = 0; index2< accounts.length; index2++){
                             input[6].add(accounts[index2]);
                         }
-                        
+                        */
+                       
                         var table = document.createElement("table");
                         table.setAttribute("class", "dataEntry");
                         table.setAttribute("id", "pTable" + i)
                         var row, cell1, cell2;
-                        var desc = ["Location: ", "Memo: ", "Amount: ", "Who: ", "Date: " , "Budget: ", "Account: "];
+                        var desc = ["Location: ", "Memo: ", "Amount: ", "Who: ", "Date: " , "From: "];
                         for(var index2 = 0; index2 <input.length; index2++){
                             row = table.insertRow(index2);
                             cell1 = row.insertCell(0);
@@ -208,15 +242,19 @@
                             cell2.appendChild(splitCounter);
                             //document.getElementById("purchaseSplit" + i).appendChild(splitCounter);
                             document.getElementById("purchaseSplit" + i).hidden = false;
+                            splitCounter.value = 2;
+                            splitCounter.onchange();
                         }
                         else{
-                            table.deleteRow(table.rows.length -1);
-                            var div = document.getElementById("purchaseSplit" + i);
-                            while (div.firstChild) {
-                                div.removeChild(div.firstChild);
+                            if(document.getElementById("splitCounter" + i) !== null){
+                                table.deleteRow(table.rows.length -1);
+                                var div = document.getElementById("purchaseSplit" + i);
+                                while (div.firstChild) {
+                                    div.removeChild(div.firstChild);
+                                }
+                                //document.getElementById("purchaseSplit" + i).innerhtml = "";
+                                div.hidden = true;
                             }
-                            //document.getElementById("purchaseSplit" + i).innerhtml = "";
-                            div.hidden = true;
                         }
                     }
                     
@@ -240,11 +278,33 @@
                         this.dataset.lastValue = splitVal;
                     }
                     function addSplits(divID, i) {
-                        var budgets = [];
+                        var option;
+                        var budOG = document.createElement("OPTGROUP");
+                        budOG.label = "Budgets";
+                        var accountOG = document.createElement("OPTGROUP");
+                        accountOG.label = "Accounts";
+                        var fundOG = document.createElement("OPTGROUP");
+                        fundOG.label = "Funds";
+                        //budgets[0] = document.createElement("option");
+                        //budgets[0].text = "";
+                        splitOpt = document.createElement("option");
+                        splitOpt.text = "SPLIT";
                         <?php
                             for ($i=0; $i<count($budgets); $i++){
-                                echo "budgets[{$i}] = document.createElement(\"option\");";
-                                echo "budgets[{$i}].text = \"" . $budgets[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "option = document.createElement(\"option\");\n\t\t\t\t\t\t";
+                                echo "option.text = \"" . $budgets[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "budOG.appendChild(option);\n\t\t\t\t\t\t";
+                            }
+                            
+                            for ($i=0; $i<count($accounts); $i++){
+                                echo "option = document.createElement(\"option\");\n\t\t\t\t\t\t";
+                                echo "option.text = \"" . $accounts[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "accountOG.appendChild(option);\n\t\t\t\t\t\t";
+                            }
+                            for ($i=0; $i<count($funds); $i++){
+                                echo "option = document.createElement(\"option\");\n\t\t\t\t\t\t";
+                                echo "option.text = \"" . $funds[$i] . "\";\n\t\t\t\t\t\t";
+                                echo "fundOG.appendChild(option);\n\t\t\t\t\t\t";
                             }
                         ?>
                         var fieldset = document.createElement ("fieldset");
@@ -264,14 +324,14 @@
                         input[1] = document.createElement("select");
                         input[1].setAttribute("name","splitBudget" + divID + "_" + i);
                         input[1].setAttribute("required","required");
-                        for(var index2 = 0; index2< budgets.length; index2++){
-                            input[1].add(budgets[index2]);
-                        }
+                        input[1].add(budOG);
+                        input[1].add(fundOG);
+                        input[1].add(accountOG);
                         
                         var table = document.createElement("table");
                         table.setAttribute("class", "dataEntry");
                         var row, cell1, cell2;
-                        var desc = ["Amount: ", "Budget: "];
+                        var desc = ["Amount: ", "From: "];
                         for(var index2 = 0; index2 <input.length; index2++){
                             row = table.insertRow(index2);
                             cell1 = row.insertCell(0);
@@ -289,26 +349,42 @@
                         $(id).remove();
                     }
                     
-                    function validateForm(){ //neds tested
+                    function validateForm(){ 
                         //This function validates the input on the form
                         //returns true when ok to send to the server
                         var purCount = parseInt(document.getElementById("numItems").value);
                         var valid = true;
                         var budget = "";
                         var amount, splitAmount;
-                        var splitCount = 0;
-                        for(var i = 1; i<=purcount; i++){
+                        var budgetsUsed = [];
+                        
+                        for(var i = 1; i<=purCount; i++){
                             budget = document.forms["mainForm"]["budget"+i].value;
                             if (budget === "SPLIT"){
-                                amount = document.forms["mainForm"]["amount"+i].value;
+                                amount = parseFloat(document.forms["mainForm"]["amount"+i].value);
                                 //sum up the split budgets
                                 splitAmount = 0;
-                                for(int j=1; j<=parseInt(document.getElementById("splitCounter"+i).value); j++){
+                                //This next loop traverses through the splits
+                                for(var j=1; j<=parseInt(document.forms["mainForm"]["splitCounter"+i].value); j++){
                                     splitAmount += parseFloat(document.forms["mainForm"]["splitAmount" + i + "_" + j].value);
-                                    
+                                    //check if assigning to the same budgets
+                                    var bud = document.forms["mainForm"]["splitBudget" + i + "_" + j].value;
+                                    if(budgetsUsed.indexOf(bud)=== -1){
+                                        budgetsUsed.push(bud);
+                                    }
+                                    else{ //it is already in the array
+                                        valid =false;
+                                        alert ("The amount being split up must be between different budgets. You have more than one entry for " + bud );
+                                        document.forms["mainForm"]["splitBudget" + i + "_" + j].focus();
+                                        document.forms["mainForm"]["splitBudget" + i + "_" + j].select();
+                                        break;
+                                    }
                                 }
-                                if(splitAmount != amount){
+                                if(splitAmount !== amount){
                                     valid =false;
+                                    alert ("The amount being split up must total to " + amount + " but it only equals " + splitAmount + " for Purchase " + i);
+                                    document.forms["mainForm"]["splitAmount" + i + "_" + j].focus();
+                                    document.forms["mainForm"]["splitAmount" + i + "_" + j].select();
                                     break;
                                 }
                             } 

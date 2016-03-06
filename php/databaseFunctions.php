@@ -1,14 +1,18 @@
 <?php
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+if (!function_exists(money_format)){
+    require 'money_format.php';
+}
     function dbConnect(){
-        $servername = "192.168.56.101";
-        $username = "testuser";
-        $password = "abcd1234";
-        $dbname = "finances";
+        $servername = "127.0.0.1";
+        $username = "web";
+        $password = "thaler1212";
+        $dbname = "financesNew";
 
         // Create connection
         $conn = new mysqli($servername, $username, $password, $dbname);
