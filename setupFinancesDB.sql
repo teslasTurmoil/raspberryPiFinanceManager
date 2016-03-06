@@ -1,8 +1,8 @@
 -- --------------------------------------------------------
--- Host:                         192.168.56.101
--- Server version:               5.5.41-MariaDB - MariaDB Server
--- Server OS:                    Linux
--- HeidiSQL Version:             9.1.0.4867
+-- Host:                         192.168.0.60
+-- Server version:               5.5.47-0+deb7u1 - (Debian)
+-- Server OS:                    debian-linux-gnu
+-- HeidiSQL Version:             9.3.0.4984
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -10,12 +10,12 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
--- Dumping database structure for finances
-CREATE DATABASE IF NOT EXISTS `finances` /*!40100 DEFAULT CHARACTER SET latin1 */;
-USE `finances`;
+-- Dumping database structure for financesNew
+CREATE DATABASE IF NOT EXISTS `financesNew` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `financesNew`;
 
 
--- Dumping structure for table finances.accounts
+-- Dumping structure for table financesNew.accounts
 CREATE TABLE IF NOT EXISTS `accounts` (
   `account_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.budgetTimeframe
+-- Dumping structure for table financesNew.budgetTimeframe
 CREATE TABLE IF NOT EXISTS `budgetTimeframe` (
   `tfID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `StartDate` date NOT NULL,
@@ -40,20 +40,23 @@ CREATE TABLE IF NOT EXISTS `budgetTimeframe` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.budget_items
+-- Dumping structure for table financesNew.budget_items
 CREATE TABLE IF NOT EXISTS `budget_items` (
   `budget_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `amount` decimal(9,2) NOT NULL,
   `account` varchar(100) NOT NULL,
   `category` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`budget_id`)
+  `assocAccountID` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`budget_id`),
+  KEY `FK_budget_items_accounts` (`assocAccountID`),
+  CONSTRAINT `FK_budget_items_accounts` FOREIGN KEY (`assocAccountID`) REFERENCES `accounts` (`account_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='These are items that will have individual purchases taken from them. The total is for the month.  Examples include Groceries, Electric, Misc. ';
 
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.funds
+-- Dumping structure for table financesNew.funds
 CREATE TABLE IF NOT EXISTS `funds` (
   `fund_ID` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
@@ -68,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `funds` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.income
+-- Dumping structure for table financesNew.income
 CREATE TABLE IF NOT EXISTS `income` (
   `income_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `amount` decimal(9,2) NOT NULL,
@@ -82,12 +85,11 @@ CREATE TABLE IF NOT EXISTS `income` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.purchases
+-- Dumping structure for table financesNew.purchases
 CREATE TABLE IF NOT EXISTS `purchases` (
   `purchaseID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `amount` decimal(9,2) NOT NULL,
   `account` varchar(100) NOT NULL,
-  `budget` varchar(100) NOT NULL,
   `recID` int(10) unsigned NOT NULL,
   PRIMARY KEY (`purchaseID`),
   KEY `FK_purchases_receipts` (`recID`),
@@ -97,7 +99,7 @@ CREATE TABLE IF NOT EXISTS `purchases` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.receipts
+-- Dumping structure for table financesNew.receipts
 CREATE TABLE IF NOT EXISTS `receipts` (
   `recID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `location` varchar(50) NOT NULL,
@@ -108,12 +110,12 @@ CREATE TABLE IF NOT EXISTS `receipts` (
   `type` tinyint(1) NOT NULL,
   `fitID` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`recID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to match line items in a bank statement';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='used to match line items in a bank statement\r\nfor types: 0 = Withdrawal, 1 = deposit';
 
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.repeatingEntries
+-- Dumping structure for table financesNew.repeatingEntries
 CREATE TABLE IF NOT EXISTS `repeatingEntries` (
   `entry_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
@@ -126,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `repeatingEntries` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table finances.transfers
+-- Dumping structure for table financesNew.transfers
 CREATE TABLE IF NOT EXISTS `transfers` (
   `transfer_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `from` varchar(100) NOT NULL,
