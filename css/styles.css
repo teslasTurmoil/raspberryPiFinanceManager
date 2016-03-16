@@ -114,9 +114,13 @@ h1 {
     background-color: rgb(111,113,112);
     color: white;
 }
-#content tr:nth-child(even) td{
+#content tr:nth-child(even){
     color: black;
-    background-color: #ccc;
+    background-color: #ccc;  
+}
+#content tr:nth-child(odd){
+    color: black;
+    background-color: white;  
 }
 #content td.desc{
     width: 70%;

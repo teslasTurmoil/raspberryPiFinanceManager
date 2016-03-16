@@ -15,7 +15,7 @@ and open the template in the editor.
             $conn = dbConnect();
 
             $i = 1;
-            while($i<=(int)$_POST['numItems']){
+            while($i<=int_value($_POST['numItems'])){
                 $table;
                 $data = $_POST["location" . $i] . "', '" .
                         $_POST["amount" . $i] . "', '" .
@@ -40,7 +40,7 @@ and open the template in the editor.
                     $recID = $conn->insert_id;
                     if($_POST["bfa" .$i] == "SPLIT"){
                         //split receipt into multiple budgets
-                        $numSplits = $_POST["splitCounter" . $i];
+                        $numSplits = intval($_POST["splitCounter" . $i]);
                         for($j=1;$j<=$numSplits; $j++){
                             if(savePurchase($conn, $_POST["splitAmount" . $i ."_" . $j], $recID, $_POST["splitBudget" .$i . "_" . $j]) == TRUE) {
                                 echo "<p> New Purchase " . $_POST["location" . $i]. " Split Budget: ". $j ." Created Successfully </p>";

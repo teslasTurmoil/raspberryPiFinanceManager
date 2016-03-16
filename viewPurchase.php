@@ -11,11 +11,10 @@
                 <thead>
                     <tr>
                         <th>Location</th>
+                        <th>Memo</th>
                         <th>Amount</th>
                         <th>Date</th>
                         <th>Who</th>
-                        <th>Budget</th>
-                        <th>Account</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -23,24 +22,43 @@
                         setlocale(LC_MONETARY, 'en_US');
                         $conn = dbConnect();
                         if($_POST['start'] <> null){
-                            $sql = "SELECT * FROM purchases WHERE purchaseDate BETWEEN '" . $_POST['start'] . "' and '" . $_POST['end'] ."';";
+                            $sql = "SELECT * FROM receipts WHERE date BETWEEN '" . $_POST['start'] . "' and '" . $_POST['end'] ."';";
                         }
                         else {
                             $date = getDate();
-                            $sql = "SELECT * FROM purchases WHERE purchaseDate > '" . $date['year']."-" . $date['mon'] ."-". "01" . "';";
+                            $sql = "SELECT * FROM receipts WHERE date > '" . $date['year']."-" . $date['mon'] ."-". "01" . "';";
                         }
-                        $purchases = $conn->query($sql);
+                        $receipts = $conn->query($sql);
 
-                        if ($purchases->num_rows > 0) {
+                        if ($receipts->num_rows > 0) {
 
                             // output data of each row
-                            while($row = $purchases->fetch_assoc()) {
-                                echo "<tr><td>".$row["location"]."</td><td>".money_format("%+.2n", $row["amount"])."</td><td> ".date("F j, Y",strtotime($row["purchaseDate"])). "</td><td> ".$row["personName"]. "</td><td> ".$row["budget"]."</td><td> ".$row["account"]."</td></tr>";
+                            while($row = $receipts->fetch_assoc()) {
+                                echo "\t\t\t<tr><td>".$row["location"]."</td><td>".$row["memo"]."</td>"
+                                        . "<td><div class=\"recSplits\">";
+                                $budgetSplits = "\t\t\t\t\t<table>\n"
+                                        . "\t\t\t\t\t\t<thead>\n"
+                                        . "\t\t\t\t\t\t\t<tr><th>From</th><th>Amount</th>\n"
+                                        . "\t\t\t\t\t\t</thead>\n"
+                                        . "\t\t\t\t\t\t<tbody>\n";
+                                //grab the records from the purchases table to see how the splits are. 
+                                $sql = "SELECT * FROM purchases WHERE recID = '" . $row[recID] . "';";
+                                $purchases = $conn->query($sql);
+                                if ($purchases->num_rows > 0){
+                                    while ($row2 = $purchases->fetch_assoc()){
+                                        $budgetSplits = $budgetSplits . "\t\t\t\t\t\t\t<tr><td>" . $row2[account] . "</td><td>" . money_format("%+.2n",$row2[amount]) . "</td></tr>\n";
+                                    }
+                                    $budgetSplits = $budgetSplits . "\t\t\t\t\t\t\t<tr><td>Total</td><td>" . money_format("%+.2n",$row[amount]) . "</td></tr>\n";
+                                }
+                                $budgetSplits = $budgetSplits . "\t\t\t\t\t\t</tbody>\n"
+                                        . "\t\t\t\t\t</table>\n";            
+                                echo $budgetSplits;
+                                echo "</div></td><td> ".date("F j, Y",strtotime($row["date"])). "</td><td> ".$row["personName"]. "</td></tr>\n";
                             }
 
                         } 
                         else {
-                            echo "<tr><td colspan=\"6\">0 results</td></tr>";
+                            echo "<tr><td colspan=\"5\">0 results</td></tr>";
                         }
                             
                          //get income
