@@ -1,21 +1,14 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title></title>
-    </head>
-    <body>
-        <?php
-            require 'php/databaseFunctions.php';
+<?php
+    require 'php/navbar.php';
+    require 'php/databaseFunctions.php';
+    
+        
+            //require 'php/databaseFunctions.php';
             $conn = dbConnect();
 
             $i = 1;
-            while($i<=int_value($_POST['numItems'])){
+            $purCount = (int)$_POST['numItems'];
+            while($i<=$purCount){
                 $table;
                 $data = $_POST["location" . $i] . "', '" .
                         $_POST["amount" . $i] . "', '" .
@@ -44,7 +37,8 @@ and open the template in the editor.
                         for($j=1;$j<=$numSplits; $j++){
                             if(savePurchase($conn, $_POST["splitAmount" . $i ."_" . $j], $recID, $_POST["splitBudget" .$i . "_" . $j]) == TRUE) {
                                 echo "<p> New Purchase " . $_POST["location" . $i]. " Split Budget: ". $j ." Created Successfully </p>";
-                                updateAccount($conn,getAssocAccount($conn, $_POST["splitBudget" .$i . "_" . $j]), $_POST["splitAmount" . $i ."_" . $j]);
+                                $accountID = getAssocAccount($conn, $_POST["splitBudget" .$i . "_" . $j]);
+                                updateAccounts($conn,$accountID, $_POST["splitAmount" . $i ."_" . $j],TRUE);
                             }
                             else {
                                 echo "Error: " .$conn->info ."<br />" . $conn->error;
@@ -55,8 +49,9 @@ and open the template in the editor.
                         //single transaction
                         if(savePurchase($conn, $_POST["amount" . $i], $recID, $_POST["bfa" .$i]) == TRUE) {
                             echo "<p> New Purchase " . $_POST["location" . $i]. " Created Successfully </p>";
-                            $accountName = getAssocAccount($conn, $_POST["bfa" . $i]);
-                            updateAccount($conn,$accountName , $_POST["amount" . $i]);
+                            $accountID = getAssocAccount($conn, $_POST["bfa" . $i]);
+                            $spendFlag = TRUE;
+                            updateAccounts($conn,$accountID , $_POST["amount" . $i], $spendFlag);
                         }
                         else {
                             echo "Error: " .$conn->info ."<br />" . $conn->error;
@@ -76,48 +71,57 @@ and open the template in the editor.
                     VALUES ('" . $amount . "', '" . $bfa . "', '" . $recID . "');";
                 return $conn->query($sql);             
             }
-            function updateAccount($conn, $accountName, $amount){
-                $sql = "SELECT balance, type FROM accounts WHERE name='". $accountName . "';";
+            function updateAccounts($conn,$accountID,$amount, $spendFlag){
+                $sql = "SELECT balance, type FROM accounts WHERE account_ID='". $accountID . "';";
                 $purchases = $conn->query($sql);
                 $row = $purchases->fetch_assoc();
                 //$amount = $_POST["amount" . $i];
-                if($_POST['type'] == "income"){
-                    $amount = -1 * $amount;
+                if(!$spendFlag) { //Income/deposit
+                    $amount = $amount * -1;
                 }
                 if ($row['type'] == "Credit"){
-                    $newBal = $row['balance'] + $amount;
+                $newBal = $row['balance'] + $amount;
                 }
                 else{
                     $newBal = $row['balance'] - $amount;
                 }
-                
-                $sql = "UPDATE accounts SET balance='" . $newBal . "' WHERE name='" . $accountName . "';";
+
+                $sql = "UPDATE accounts SET balance='" . $newBal . "' WHERE account_ID='" . $accountID . "';";
                 if ($conn->query($sql) ==TRUE){
-                    echo "Account: " . $accountName . " updated successfully!";
+                    echo "Account: " . $accountID . " updated successfully!";
                 }
                 else {
                     echo "Error: " .$conn->info ."<br />" . $conn->error;
                 }
             }
-            function getAssocAccount ($conn, $bfa){
-                $result = $conn->query("SELECT name FROM account WHERE name = '" . $bfa . "'");
-                if($result->num_rows == 0) {
-                    $result = $conn->query("SELECT name, assocAccountID FROM budget_items WHERE name = '" . $bfa . "'");
-                    if($result->num_rows == 0) {
-                        //it's a fund
-                        $result = $conn->query("SELECT name, assocAccountID FROM funds WHERE name = '" . $bfa . "'");
-                        
-                    }
-                    //get the associated account id then look up the account
-                    $row = $result->fetch_assoc();
-                    $result = $conn->query("SELECT account_ID, name FROM accounts WHERE account_ID = '" . $row['assocAccountID'] . "'");
-                    
+            function getAssocAccount($conn, $budName ){
+                //this function gets the associated bank account ID for funds or budgets. Return the bank account ID otherwis
+                $sql = "SELECT account_ID, name FROM accounts WHERE name='". $budName . "';";
+                $results = $conn->query($sql);
+                //check if it's an account
+                if ($results->num_rows >=1){
+                    $row = $results->fetch_assoc();
+                    return $row['account_ID'];
                 }
-                $row = $result->fetch_assoc();
-                return $row['name'];
+                //check if it's a budget
+                $sql = "SELECT assocAccountID, name FROM budget_items WHERE name='". $budName . "';";
+                $results = $conn->query($sql);
+                if ($results->num_rows >=1){
+                    $row = $results->fetch_assoc();
+
+                    return $row['assocAccountID'];
+                }
+                //check if it's a fund
+                $sql = "SELECT name, assocAccountID FROM funds WHERE name='". $budName . "';";
+                $results = $conn->query($sql);
+                if ($results->num_rows >=1){
+                    $row = $results->fetch_assoc();
+
+                    return $row['assocAccountID'];
+                }
+                return -1;//return an error for not being found
             }
         ?>
         
         <p> Returning to the home page in 5s </p> <?php header ("refresh:5; url=index.php"); ?>
-    </body>
-</html>
+    <?php require 'php/footer.php'; ?>
