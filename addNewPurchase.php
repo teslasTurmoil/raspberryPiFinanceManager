@@ -138,7 +138,7 @@
                         input[1].setAttribute("name","memo" + i);
                         input[1].setAttribute("size", "20");
                         input[1].setAttribute("maxlength","200");
-                        input[1].setAttribute("required","required");
+                        //input[1].setAttribute("required","required");
                         
                         input[2] = document.createElement("input");
                         input[2].type = "number";

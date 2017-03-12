@@ -36,7 +36,7 @@
                                 else {
                                     $date = getDate();
                                     $sql = "SELECT SUM(purchases.amount), purchases.account FROM purchases, receipts " .
-                                            "WHERE purchases.account='" .$budgetBucket['name'] . "' AND purchases.recID = receipts.recID AND receipts.date > '" . $date['year']."-" . $date['mon'] ."-". "01';"; 
+                                            "WHERE purchases.account='" .$budgetBucket['name'] . "' AND purchases.recID = receipts.recID AND receipts.date >= '" . $date['year']."-" . $date['mon'] ."-". "01';"; 
                                 }
                                 //figure out the remaining total
                                 $purchaseItems = dbQuery($conn, $sql);

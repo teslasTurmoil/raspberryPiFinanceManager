@@ -56,7 +56,7 @@ and open the template in the editor.
                         <nav>
                             <ul>
                                 <li><a href="monthlySummary.php">Monthly Summary</a></li>
-                                <li><a href="Yearly Summary.php">Yearly Summary</a></li>
+                                <li><a href="yearlySummary.php">Yearly Summary</a></li>
                             </ul>
                         </nav>
                     </li>
@@ -147,6 +147,3 @@ and open the template in the editor.
         </script>
         <div id="content" class="content">
             
-        
-        
-    

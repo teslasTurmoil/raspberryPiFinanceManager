@@ -125,4 +125,7 @@ h1 {
 #content td.desc{
     width: 70%;
 }
-
+.chart {
+  width: 80%;
+  margin: 15px auto;
+}
